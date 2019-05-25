@@ -38,6 +38,7 @@ public:
 	bool esta_inactiva();
 	void arribo();
 	void ovoposito();
+	void termino_ovoposito();
 	void contada_V();
 	void contada_P();
 	void contada_C();
@@ -112,6 +113,11 @@ void Tortuga::ovoposito()
 	si_ovoposito = true;
 }
 
+void Tortuga::termino_ovoposito()
+{
+	si_ovoposito = false;
+}
+
 bool Tortuga::logro_arribar()
 {
 	return si_arribo;
@@ -129,8 +135,12 @@ bool Tortuga::fue_contada_V()
 
 void Tortuga::contada_V()
 {
+	//cout << "entra a contada V\n";
 	if(si_ovoposito)
+	{
 		ha_sido_contada_V = true;
+	}
+	ha_sido_contada_V = true;
 }
 
 bool Tortuga::fue_contada_P()
@@ -167,7 +177,7 @@ void Tortuga::avanzar(bool pasar_estado,const vector<double>& proba_inactiva, do
 {
 	if(id_de_estado == 0)
 	{
-		posicion.second += velocidad * (50/3); // ese 5/3 pasa de km/h a m/min	
+		posicion.second += velocidad;
 	}
     //aqui calculo mediante probabilidad si en ese estado epecifico va a pasar a ser inactiva
 	if(1 - proba_inactiva[id_de_estado] < random && id_de_estado < 6 && pasar_estado) 
@@ -186,9 +196,10 @@ void Tortuga::avanzar(bool pasar_estado,const vector<double>& proba_inactiva, do
 				break;
 			case 2:
 				++id_de_estado;
+				ovoposito(); //le pone al bool si_anido true para indicar que finalizo su labor
 				break;
 			case 3:
-				ovoposito(); //le pone al bool si_anido true para indicar que finalizo su labor
+				termino_ovoposito();
 				++id_de_estado;
 				break;
 			case 4:

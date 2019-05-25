@@ -87,6 +87,10 @@ public:
 	
 	int calcular_formula_TVB(int x);
 	
+	bool calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int& id_estado);
+	
+	vector<int> rangos_de_estado();
+	
 	
 
 private:
@@ -228,12 +232,17 @@ void Simulador::simular(int total_tics, int threads_count)
 	
 	vector<int> rangos_tortugas = calcular_rangos_tortugas();
 	
+	vector<int> rangos_estados = rangos_de_estado();
+	
 	int total_tortugas_contadas_V = 0;
 	
 	int total_tortugas_contadas_P = 0;
 	
 	int total_tortugas_contadas_C = 0;
+	
 	inicializarContadores();
+	
+	int id_estado = 0;
 	
 	for(int i = 0; i < total_tics; ++i)
 	{
@@ -256,7 +265,7 @@ void Simulador::simular(int total_tics, int threads_count)
 		{	
 			if(this->tortugas[j].logro_arribar())
 			{
-				this->tortugas[j].avanzar(i % ((int)marea[2] / 6) == 0,vector_compor_tortugas,distribution(generator)); 
+				this->tortugas[j].avanzar(calcular_paso_de_estado(rangos_estados, i, id_estado),vector_compor_tortugas,distribution(generator)); 
 				if(!tortugas[j].fue_contada_V())
 				{
 					for(int k = 0; k < matriz_transectos_verticales[0][0]; ++k)
@@ -266,7 +275,7 @@ void Simulador::simular(int total_tics, int threads_count)
 							if(matriz_transectos_verticales[k+1][0] <= tortugas[j].obtPosicion().first && tortugas[j].obtPosicion().first <= matriz_transectos_verticales[k+1][0] + 2 && matriz_transectos_verticales[k+1][1] <= tortugas[j].obtPosicion().second && tortugas[j].obtPosicion().second <= matriz_transectos_verticales[k+1][2])
 							{
 								tortugas[j].contada_V();
-								if(tortugas[j].fue_contada_V)
+								if(tortugas[j].fue_contada_V())
 									++total_tortugas_contadas_V;
 							}
 						}		
@@ -315,6 +324,18 @@ vector<int> Simulador::calcular_rangos_tortugas()
 	rangos[1] = cantidad_tortugas_total * 0.30;
 	rangos[2] = rangos[1] + cantidad_tortugas_total * 0.45;
 	rangos[3] = rangos[2] + cantidad_tortugas_total * 0.25;
+	return rangos;
+}
+
+vector<int> Simulador::rangos_de_estado()
+{
+	vector<int> rangos(6);
+	rangos[0] = marea[2] * 0.20;
+	rangos[1] = rangos[0] + (int)marea[2] * 0.05;
+	rangos[2] = rangos[1] + (int)marea[2] * 0.07;
+	rangos[3] = rangos[2] + (int)marea[2] * 0.55;
+	rangos[4] = rangos[3] + (int)marea[2] * 0.06;
+	rangos[5] = rangos[4] + (int)marea[2] * 0.07;
 	return rangos;
 }
 
@@ -400,5 +421,18 @@ int Simulador::calcular_formula_TVB(int x)
 	int pr = marea[2] / 6;	
 	return (A * d / ( 2 * w * m * j) )*(N / pr);
 }
+
+bool Simulador::calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int& id_estado)
+{
+	bool result = tic_actual == (int)rangos_de_estado[id_estado];
+	if(result)
+	{
+		++id_estado;
+	}	
+	return result;
+}
+
+	
+	
 
 

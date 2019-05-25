@@ -5,7 +5,7 @@
 //  Created by administrador on 29/4/19.
 //  Copyright © 2019 administrador. All rights reserved.
 //
-
+#pragma GCC diagnostic ignored "-Wdeprecated"    //sirve para quitar el warning del throw
 #include <vector>
 #include <sstream>
 #include <fstream>
@@ -56,13 +56,13 @@ int main(int argc, const char * argv[]) {
 
 void rellenar_vector_archivos(vector<string>& vector_archivos)
 {		
-	vector_archivos[0] = "/home/thecromer/Documents/Paralela/Proyecto#2/archivos/experimentos.csv";
-	vector_archivos[1] = "/home/thecromer/Documents/Paralela/Proyecto#2/archivos/terreno.csv";
-	vector_archivos[2] = "/home/thecromer/Documents/Paralela/Proyecto#2/archivos/cuadrantes.csv";
-	vector_archivos[3] = "/home/thecromer/Documents/Paralela/Proyecto#2/archivos/transectos_verticales.csv";
-	vector_archivos[4] = "/home/thecromer/Documents/Paralela/Proyecto#2/archivos/transecto_paralelo_berma.csv";
-	vector_archivos[5] = "/home/thecromer/Documents/Paralela/Proyecto#2/archivos/marea.csv";
-	vector_archivos[6] = "/home/thecromer/Documents/Paralela/Proyecto#2/archivos/comportamiento_tortugas.csv"; 
+	vector_archivos[0] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/experimentos.csv";
+	vector_archivos[1] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/terreno.csv";
+	vector_archivos[2] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/cuadrantes.csv";
+	vector_archivos[3] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/transectos_verticales.csv";
+	vector_archivos[4] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/transecto_paralelo_berma.csv";
+	vector_archivos[5] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/marea.csv";
+	vector_archivos[6] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/comportamiento_tortugas.csv"; 
 }
 
 vector<vector<int>> leer_archivos_enteros(vector<string> vector_archivos, int id)
@@ -139,11 +139,5 @@ void inicializar_simulador(vector<vector<vector<int>>>& master_matriz, vector<ve
 			// experimentos un total de 
 			simuladores[i].simular(matriz_mareas[0][2],master_matriz[0][i][3 + i]);
 		}
-		
-	/*	
-	Simulador simulador;
-	simulador.inicializarMarea(matriz_mareas[0]);
-	simulador.inicializarTortugas(10,vector_compor_tortugas);
-	simulador.simular(10,8);	*/
 }
 
