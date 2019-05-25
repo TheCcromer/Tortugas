@@ -34,8 +34,11 @@ public:
 	bool logro_arribar();
 	bool fue_contada_V();
 	bool fue_contada_P();
-	bool fue_contada_C();
+	bool fue_contada_C_vagando();
+	bool fue_contada_C_excavando();
+	bool fue_contada_C_anidando();
 	bool esta_inactiva();
+	int obt_estado();
 	void arribo();
 	void ovoposito();
 	void termino_ovoposito();
@@ -54,7 +57,9 @@ private:
 	bool si_arribo;
 	bool ha_sido_contada_V;
 	bool ha_sido_contada_P;
-	bool ha_sido_contada_C;
+	bool ha_sido_contada_C_vagando;
+	bool ha_sido_contada_C_excavando;
+	bool ha_sido_contada_C_anidando;
 	bool inactivo;
 };
 
@@ -66,9 +71,15 @@ Tortuga::Tortuga()
 	si_ovoposito = false;
 	si_arribo = false;
 	id_de_estado = 0; //0 = vagar 1 = camar 2 = excavar 3 = poner 4 = tapar 5 = camuflar 6 = inactiva
+	
+	// las siguientes variables son puestan en true hasta que el contador las haya contado
 	ha_sido_contada_V = false;
 	ha_sido_contada_P = false;
-	ha_sido_contada_C = false;
+	ha_sido_contada_C_vagando = false;
+	ha_sido_contada_C_excavando = false;
+	ha_sido_contada_C_anidando = false;
+	
+	//
 	inactivo = false;
 }
 
@@ -103,21 +114,6 @@ void Tortuga::asgPosicion(int x, int y )
 	posicion.second = y;
 }
 
-bool Tortuga::logro_ovopositar()
-{
-	return si_ovoposito;
-}
-
-void Tortuga::ovoposito()
-{
-	si_ovoposito = true;
-}
-
-void Tortuga::termino_ovoposito()
-{
-	si_ovoposito = false;
-}
-
 bool Tortuga::logro_arribar()
 {
 	return si_arribo;
@@ -135,11 +131,6 @@ bool Tortuga::fue_contada_V()
 
 void Tortuga::contada_V()
 {
-	//cout << "entra a contada V\n";
-	if(si_ovoposito)
-	{
-		ha_sido_contada_V = true;
-	}
 	ha_sido_contada_V = true;
 }
 
@@ -153,14 +144,29 @@ void Tortuga::contada_P()
 	ha_sido_contada_P = true;
 }
 
-bool Tortuga::fue_contada_C()
+bool Tortuga::fue_contada_C_vagando()
 {
-	return ha_sido_contada_C;
+	return ha_sido_contada_C_vagando;
+}
+
+bool Tortuga::fue_contada_C_excavando()
+{
+	return ha_sido_contada_C_excavando;
+}
+
+bool Tortuga::fue_contada_C_anidando()
+{
+	return ha_sido_contada_C_anidando;
 }
 
 void Tortuga::contada_C()
 {
-	ha_sido_contada_C = true;
+	if(id_de_estado == 0)
+		ha_sido_contada_C_vagando = true;
+	if(id_de_estado == 1 || id_de_estado == 2)
+		ha_sido_contada_C_excavando = true;
+	if(id_de_estado >= 3)
+		ha_sido_contada_C_anidando = true;
 }
 
 void Tortuga::inactivoS()
@@ -171,6 +177,11 @@ void Tortuga::inactivoS()
 bool Tortuga::esta_inactiva()
 {
 	return inactivo;
+}
+
+int Tortuga::obt_estado()
+{
+	return id_de_estado;
 }
 
 void Tortuga::avanzar(bool pasar_estado,const vector<double>& proba_inactiva, double random)
@@ -196,10 +207,8 @@ void Tortuga::avanzar(bool pasar_estado,const vector<double>& proba_inactiva, do
 				break;
 			case 2:
 				++id_de_estado;
-				ovoposito(); //le pone al bool si_anido true para indicar que finalizo su labor
 				break;
 			case 3:
-				termino_ovoposito();
 				++id_de_estado;
 				break;
 			case 4:

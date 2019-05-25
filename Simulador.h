@@ -71,9 +71,6 @@ public:
 	// RET: total de tortugas que arribaron en la simulación.
 	long obtTotalTortugasArribaron();
 
-	// RET: total de tortugas que anidaron en la simulación.
-	long obtTotalTortugasOvopositaron();
-
 	// RET: estimación del total de tortugas que anidaron con base en el método de transectos sobre la berma.
 	double obtEstimacionXtransectosSobreBerma();
 
@@ -86,6 +83,10 @@ public:
 	long obtTotalTortugasInactivas();
 	
 	int calcular_formula_TVB(int x);
+	
+	int calcular_formula_TPB(int x);
+	
+	int calcular_formula_C(int vagando, int excavando, int anidando);
 	
 	bool calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int& id_estado);
 	
@@ -161,12 +162,9 @@ void Simulador::inicializarContadores()
 	int x;
 	int y;
 	vector<Contador> contadores_vertical(matriz_transectos_verticales[0][0]);
-	for(int i = 1; i <= matriz_transectos_verticales[0][0]; ++i)
+	for(int i = 0; i < matriz_transectos_verticales[0][0]; ++i)
 	{
-		x = matriz_transectos_verticales[i][0] + 1; //porque seria la media del eje x
-		y = (matriz_transectos_verticales[i][2] + matriz_transectos_verticales[i][1]) / 2; //la media del eje y 
-		contadores_vertical[i - 1].asgPosicion(x,y);
-		contadores_vertical[i - 1].asignar_reset_conteo(matriz_transectos_verticales[0][1]);
+		contadores_vertical[i].asignar_reset_conteo(matriz_transectos_verticales[0][1]);
 	}
 	this->contadores_verticales = contadores_vertical;
 	
@@ -174,32 +172,18 @@ void Simulador::inicializarContadores()
 	
 	contador_paralelo.asignar_reset_conteo(matriz_transecto_paralelo[0][1]);
 	
-	
-	
-	
-	
-	/*vector<Contador> contadores_cuadrante(matriz_cuadrantes[0][0]);
+	vector<Contador> contadores_cuadrante(matriz_cuadrantes[0][0]);
 	for(int i = 0; i < matriz_cuadrantes[0][0]; ++i)
 	{
-		x = matriz_cuadrantes[i][0] + (matriz_cuadrantes[i][2] - matriz_cuadrantes[i][0]); // para colocarlos en el centro
-		y = matriz_cuadrantes[i][1] + (matriz_cuadrantes[i][3] - matriz_cuadrantes[i][1]);
-		contadores_cuadrante[i].asgPosicion(x,y);
+		contadores_cuadrante[i].asignar_reset_conteo(matriz_cuadrantes[0][1]);
 	}
 	this->contadores_cuadrante = contadores_cuadrante;
-	vector<Contador> contadores_paralelo(matriz_transecto_paralelo[0][0]);
-	for(int i = 0; i < matriz_transecto_paralelo[0][0]; ++i)
-	{
-		x = 
-		y = 
-	}
-	contador_paralelo.asgPosicion()
-	*/ 
 }
 
 void Simulador::inicializarArribada(int rango_inferior, int rango_superior, double marea_actual)
 {
 	std::default_random_engine generator;
-    std::uniform_int_distribution<int> x(0,1500);
+    std::uniform_int_distribution<int> x(0,1450);
     std::uniform_int_distribution<int> y(marea[0],marea_actual);
 	for(int i = rango_inferior; i < rango_superior; ++i)
 	{
@@ -275,8 +259,7 @@ void Simulador::simular(int total_tics, int threads_count)
 							if(matriz_transectos_verticales[k+1][0] <= tortugas[j].obtPosicion().first && tortugas[j].obtPosicion().first <= matriz_transectos_verticales[k+1][0] + 2 && matriz_transectos_verticales[k+1][1] <= tortugas[j].obtPosicion().second && tortugas[j].obtPosicion().second <= matriz_transectos_verticales[k+1][2])
 							{
 								tortugas[j].contada_V();
-								if(tortugas[j].fue_contada_V())
-									++total_tortugas_contadas_V;
+								++total_tortugas_contadas_V;
 							}
 						}		
 					}
@@ -292,20 +275,42 @@ void Simulador::simular(int total_tics, int threads_count)
 							tortugas[j].contada_P();
 						}
 					}
+				}
+				if(!tortugas[j].fue_contada_C_vagando() || !tortugas[j].fue_contada_C_anidando() || !tortugas[j].fue_contada_C_excavando())
+				{
+					for(int k = 0; k < matriz_cuadrantes[0][0]; ++k)
+					{
+						if(!contadores_cuadrante[k].esta_en_espera(i))
+						{
+							if(matriz_cuadrantes[k+1][0] <= tortugas[j].obtPosicion().first && tortugas[j].obtPosicion().first <= matriz_cuadrantes[k+1][2] && matriz_cuadrantes[k+1][1] <= tortugas[j].obtPosicion().second && tortugas[j].obtPosicion().second <= matriz_cuadrantes[k+1][3])
+							{
+								tortugas[j].contada_C();
+							}
+						}
+					}
 				}	
 			}	
 		}
-		
-		
 	}
+	int total_tortugas_contadas_C_vagando = 0;
+	int total_tortugas_contadas_C_excavando = 0;
+	int total_tortugas_contadas_C_anidando = 0;
 	
-	int formula_TVB = calcular_formula_TVB(total_tortugas_contadas_V);
+	for(int i = 0; i < cantidad_tortugas_total; ++i)
+	{
+		if(tortugas[i].fue_contada_C_vagando())
+			++total_tortugas_contadas_C_vagando;
+		if(tortugas[i].fue_contada_C_excavando())
+			++total_tortugas_contadas_C_excavando;
+		if(tortugas[i].fue_contada_C_anidando())
+			++total_tortugas_contadas_C_anidando;	
+	}
 	
 	cout << "cantidad total de tortugas: " << cantidad_tortugas_total << "\n";
 	cout << "cantidad total de tortugas inactivas: " << obtTotalTortugasInactivas() << "\n";
-	cout << "cantidad total de tortugas contadas por TVB: " << formula_TVB << "\n";
-	cout << "cantidad total de tortugas contadas por TPB: " << total_tortugas_contadas_P << "\n";
-	//cout << "total de tortugas que anidaron: " << obtTotalTortugasOvopositaron() << "\n";
+	cout << "cantidad total de tortugas contadas por TVB: " << calcular_formula_TVB(total_tortugas_contadas_V) << "\n";
+	cout << "cantidad total de tortugas contadas por TPB: " << calcular_formula_TPB(total_tortugas_contadas_P) << "\n";
+	cout << "cantidad total de tortugas contadas por C: " << calcular_formula_C(total_tortugas_contadas_C_vagando, total_tortugas_contadas_C_excavando, total_tortugas_contadas_C_anidando) << "\n";
 }
 
 vector<double> Simulador::calcular_rangos_mareas()
@@ -330,12 +335,12 @@ vector<int> Simulador::calcular_rangos_tortugas()
 vector<int> Simulador::rangos_de_estado()
 {
 	vector<int> rangos(6);
-	rangos[0] = marea[2] * 0.20;
-	rangos[1] = rangos[0] + (int)marea[2] * 0.05;
-	rangos[2] = rangos[1] + (int)marea[2] * 0.07;
-	rangos[3] = rangos[2] + (int)marea[2] * 0.55;
-	rangos[4] = rangos[3] + (int)marea[2] * 0.06;
-	rangos[5] = rangos[4] + (int)marea[2] * 0.07;
+	rangos[0] = marea[2] * 0.01;
+	rangos[1] = rangos[0] + (int)marea[2] * 0.10;
+	rangos[2] = rangos[1] + (int)marea[2] * 0.20;
+	rangos[3] = rangos[2] + (int)marea[2] * 0.07;
+	rangos[4] = rangos[3] + (int)marea[2] * 0.15;
+	rangos[5] = rangos[4] + (int)marea[2] * 0.30;
 	return rangos;
 }
 
@@ -384,15 +389,6 @@ long Simulador::obtTotalTortugasInactivas()
 	return total;	
 }
 
-long Simulador::obtTotalTortugasOvopositaron()
-{
-	int total = 0;
-	for(int i = 0; i < cantidad_tortugas_total; ++i)
-		if(tortugas[i].logro_ovopositar())
-			++total;
-	return total;		
-}
-
 double Simulador::obtEstimacionXtransectosSobreBerma()
 {
 	return 0.0; // agregue su propio codigo
@@ -410,16 +406,40 @@ double Simulador::obtEstimacionXcuadrantes()
 
 int Simulador::calcular_formula_TVB(int x)
 {
-	int A = 1500;
+	int A = 0;
+	for(int i = 0; i < 15; ++i)
+		A += matriz_terrenos[i][3];
 	int d = marea[2];
 	int w = 2;
-	int m = 1;
+	double m = (int)marea[2] / matriz_transectos_verticales[0][1];
 	int j = 0;
 	for(int i = 1; i < matriz_transectos_verticales[0][0]; ++i)
 		j += matriz_transectos_verticales[i][2] - matriz_transectos_verticales[i][1];
 	int N = x;
-	int pr = marea[2] / 6;	
-	return (A * d / ( 2 * w * m * j) )*(N / pr);
+	double pr = rangos_de_estado()[3] - rangos_de_estado()[2];	
+	return (A * d / ( 2 * w * m * j) ) * (N / pr);
+}
+
+int Simulador::calcular_formula_TPB(int x)
+{
+	int N = x;
+	int m = (int)marea[2] / matriz_transecto_paralelo[0][1];
+	double i = matriz_transecto_paralelo[0][1];
+	return (N * i) / (4.2 * m);
+}
+
+int Simulador::calcular_formula_C(int vagando, int excavando, int anidando)
+{
+	int Noc = anidando;
+	int Ne = excavando;
+	int Nv = vagando;
+	int Ac = 0;
+	for(int i = 0; i < 15; ++i)
+		Ac += matriz_terrenos[i][3];
+	int Aci = (matriz_cuadrantes[1][2] - matriz_cuadrantes[1][0]) * (matriz_cuadrantes[1][3] - matriz_cuadrantes[1][1]);
+	int d = (int)marea[2]; 
+	double m =  (int)marea[2] / matriz_cuadrantes[0][1];
+	return (Noc + 0.94 * Ne + 0.47 * Nv) * 1.25 * (Ac / Aci) * ((d / 60) / 64.8 * m);
 }
 
 bool Simulador::calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int& id_estado)
