@@ -63,24 +63,16 @@ public:
 
 	
 	void inicializarContadores();
+	
+	bool calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int id_estado);
+	
+	vector<int> rangos_de_estado();
 
 	/*
 	* OBTENEDORES DE RESULTADOS DE LA SIMULACIÓN
 	*/
-
-	// RET: total de tortugas que arribaron en la simulación.
-	long obtTotalTortugasArribaron();
-
-	// RET: estimación del total de tortugas que anidaron con base en el método de transectos sobre la berma.
-	double obtEstimacionXtransectosSobreBerma();
-
-	// RET: estimación del total de tortugas que arribaron con base en el método de transecto paralelo a la berma.
-	double obtEstimacionXtransectoHorizontal();
-
-	// RET: estimación del total de tortugas que anidaron con base en el método de cuadrantes.
-	double obtEstimacionXcuadrantes();
 	
-	long obtTotalTortugasInactivas();
+	int obtTotalTortugasAnidaron();
 	
 	int calcular_formula_TVB(int x);
 	
@@ -88,9 +80,7 @@ public:
 	
 	int calcular_formula_C(int vagando, int excavando, int anidando);
 	
-	bool calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int& id_estado);
-	
-	vector<int> rangos_de_estado();
+
 	
 	
 
@@ -202,6 +192,7 @@ void Simulador::inicializarMarea(const vector<double>& marea)
 
 void Simulador::simular(int total_tics, int threads_count)
 {	
+	double begin = omp_get_wtime();
 	std::default_random_engine generator;
 	//para asignar el cambio de estado a inactivo para las tortugas
     std::uniform_real_distribution<double> distribution(0.0,1.0);
@@ -245,11 +236,12 @@ void Simulador::simular(int total_tics, int threads_count)
 		
 		contador_paralelo.avanzar();
 		
+#pragma parallel for num_threads(threads_count) reduction(+ : total_tortugas_contadas_V,total_tortugas_contadas_P)
 		for(int j = 0; j < cantidad_tortugas_total; ++j)
 		{	
-			if(this->tortugas[j].logro_arribar())
+			if(tortugas[j].logro_arribar())
 			{
-				this->tortugas[j].avanzar(calcular_paso_de_estado(rangos_estados, i, id_estado),vector_compor_tortugas,distribution(generator)); 
+				tortugas[j].avanzar(calcular_paso_de_estado(rangos_estados, i, id_estado),vector_compor_tortugas,distribution(generator)); 
 				if(!tortugas[j].fue_contada_V())
 				{
 					for(int k = 0; k < matriz_transectos_verticales[0][0]; ++k)
@@ -291,6 +283,8 @@ void Simulador::simular(int total_tics, int threads_count)
 				}	
 			}	
 		}
+		if(calcular_paso_de_estado(rangos_estados, i , id_estado))
+					++id_estado;
 	}
 	int total_tortugas_contadas_C_vagando = 0;
 	int total_tortugas_contadas_C_excavando = 0;
@@ -305,12 +299,13 @@ void Simulador::simular(int total_tics, int threads_count)
 		if(tortugas[i].fue_contada_C_anidando())
 			++total_tortugas_contadas_C_anidando;	
 	}
-	
+	cout << "con " << threads_count << " de cantidad de threads\n";
 	cout << "cantidad total de tortugas: " << cantidad_tortugas_total << "\n";
-	cout << "cantidad total de tortugas inactivas: " << obtTotalTortugasInactivas() << "\n";
+	cout << "cantidad total de tortugas anidaron: " << obtTotalTortugasAnidaron() << "\n";
 	cout << "cantidad total de tortugas contadas por TVB: " << calcular_formula_TVB(total_tortugas_contadas_V) << "\n";
 	cout << "cantidad total de tortugas contadas por TPB: " << calcular_formula_TPB(total_tortugas_contadas_P) << "\n";
 	cout << "cantidad total de tortugas contadas por C: " << calcular_formula_C(total_tortugas_contadas_C_vagando, total_tortugas_contadas_C_excavando, total_tortugas_contadas_C_anidando) << "\n";
+	cout << "tiempo que duro esta simulacion: " << omp_get_wtime() - begin << "\n\n\n";
 }
 
 vector<double> Simulador::calcular_rangos_mareas()
@@ -335,11 +330,11 @@ vector<int> Simulador::calcular_rangos_tortugas()
 vector<int> Simulador::rangos_de_estado()
 {
 	vector<int> rangos(6);
-	rangos[0] = marea[2] * 0.01;
+	rangos[0] = marea[2] * 0.22;
 	rangos[1] = rangos[0] + (int)marea[2] * 0.10;
 	rangos[2] = rangos[1] + (int)marea[2] * 0.20;
 	rangos[3] = rangos[2] + (int)marea[2] * 0.07;
-	rangos[4] = rangos[3] + (int)marea[2] * 0.15;
+	rangos[4] = rangos[3] + (int)marea[2] * 0.09;
 	rangos[5] = rangos[4] + (int)marea[2] * 0.30;
 	return rangos;
 }
@@ -362,26 +357,12 @@ void Simulador::control_arribada(int estado_marea, double altura_marea_actual, v
 	}  
 }
 
-
-long Simulador::obtTotalTortugasArribaron()
+int Simulador::obtTotalTortugasAnidaron()
 {
 	int total = 0;
 	for(int i = 0; i < cantidad_tortugas_total; ++i)
 	{
-		if(this->tortugas[i].logro_arribar())
-		{
-			++total;
-		}	
-	}
-	return total;		
-}
-
-long Simulador::obtTotalTortugasInactivas()
-{
-	int total = 0;
-	for(int i = 0; i < cantidad_tortugas_total; ++i)
-	{
-		if(this->tortugas[i].esta_inactiva())
+		if(this->tortugas[i].logro_ovopositar())
 		{
 			++total;
 		}	
@@ -389,20 +370,6 @@ long Simulador::obtTotalTortugasInactivas()
 	return total;	
 }
 
-double Simulador::obtEstimacionXtransectosSobreBerma()
-{
-	return 0.0; // agregue su propio codigo
-}
-
-double Simulador::obtEstimacionXtransectoHorizontal()
-{
-	return 0.0; // agregue su propio codigo
-}
-
-double Simulador::obtEstimacionXcuadrantes()
-{
-	return 0.0; // agregue su propio codigo
-}
 
 int Simulador::calcular_formula_TVB(int x)
 {
@@ -442,13 +409,9 @@ int Simulador::calcular_formula_C(int vagando, int excavando, int anidando)
 	return (Noc + 0.94 * Ne + 0.47 * Nv) * 1.25 * (Ac / Aci) * ((d / 60) / 64.8 * m);
 }
 
-bool Simulador::calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int& id_estado)
+bool Simulador::calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int id_estado)
 {
 	bool result = tic_actual == (int)rangos_de_estado[id_estado];
-	if(result)
-	{
-		++id_estado;
-	}	
 	return result;
 }
 

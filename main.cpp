@@ -50,7 +50,7 @@ int main(int argc, const char * argv[]) {
 	}
 	inicializar_simulador(master_matriz,matriz_mareas, vector_compor_tortugas[0]);
 	double end = omp_get_wtime();
-	printf("\nEl tiempo total fue de: %fs\n", end - begin);
+	printf("\nEl tiempo total de todas las simulaciones fue de: %fs\n", end - begin);
     return 0;
 }
 
@@ -134,10 +134,16 @@ void inicializar_simulador(vector<vector<vector<int>>>& master_matriz, vector<ve
 			simuladores[i].inicializarTransectoBerma(master_matriz[4]);
 			simuladores[i].inicializarCuadrantes(master_matriz[2]);
 			simuladores[i].inicializarMarea(matriz_mareas[0]);
-			simuladores[i].inicializarTortugas(master_matriz[0][i][2], vector_compor_tortugas);
 			// poner un futuro for aqui que e haga el numero respectivo de veces que diga 
 			// experimentos un total de 
-			simuladores[i].simular(matriz_mareas[0][2],master_matriz[0][i][3 + i]);
+			for(int j = 0; j < 4; ++j)
+			{
+				for(int k = 0; k < 10; ++k)
+				{
+					simuladores[i].inicializarTortugas(master_matriz[0][i][2], vector_compor_tortugas);
+					simuladores[i].simular(matriz_mareas[0][2],master_matriz[0][i][3 + j]);
+				}
+			}	
 		}
 }
 

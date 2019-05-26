@@ -124,6 +124,16 @@ void Tortuga::arribo()
 	si_arribo = true;
 }
 
+void Tortuga::ovoposito()
+{
+	si_ovoposito = true;
+}
+
+bool Tortuga::logro_ovopositar()
+{
+	return si_ovoposito;
+}
+
 bool Tortuga::fue_contada_V()
 {
 	return ha_sido_contada_V;
@@ -196,7 +206,8 @@ void Tortuga::avanzar(bool pasar_estado,const vector<double>& proba_inactiva, do
 		inactivoS();
 		id_de_estado = 6; //representa inactiva en numeros 
 	}
-	if(id_de_estado < 6 && pasar_estado)	
+	if(id_de_estado < 6 && pasar_estado)
+	{
 		switch(id_de_estado)
 		{
 			case 0:
@@ -206,6 +217,7 @@ void Tortuga::avanzar(bool pasar_estado,const vector<double>& proba_inactiva, do
 				++id_de_estado;
 				break;
 			case 2:
+				ovoposito();
 				++id_de_estado;
 				break;
 			case 3:
@@ -215,4 +227,5 @@ void Tortuga::avanzar(bool pasar_estado,const vector<double>& proba_inactiva, do
 				++id_de_estado;
 				break;
 		}
+	}	
 }
