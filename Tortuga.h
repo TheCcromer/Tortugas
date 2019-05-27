@@ -24,12 +24,8 @@ public:
 
 	// Asignadores:
 	void asgVelocidad(double nv);
-	void asgPosicion(int x, int y);;
-
-	// EFE: avanza *this según su velocidad y evoluciona su estado en el tic que le toque.
-	void avanzar( bool pasar_estado,const vector<double>& proba_inactiva, double random);
-	
-	
+	void asgPosicion(int x, int y);
+	int obt_estado();
 	bool logro_ovopositar();
 	bool logro_arribar();
 	bool fue_contada_V();
@@ -38,7 +34,13 @@ public:
 	bool fue_contada_C_excavando();
 	bool fue_contada_C_anidando();
 	bool esta_inactiva();
-	int obt_estado();
+
+	// EFE: avanza *this según su velocidad y evoluciona su estado en el tic que le toque.
+	void avanzar( bool pasar_estado,const vector<double>& proba_inactiva, double random);
+	
+	
+	
+	//metodos que vuelven true dependiendo de la situacion
 	void arribo();
 	void ovoposito();
 	void termino_ovoposito();
@@ -52,7 +54,9 @@ private:
 	double velocidad;
 	T_posicion posicion; // posicion.first == coordenada X, posicion.second = coordenada Y
 	int id_de_estado; //para poder sacar cada vez la probabilidad de que la tortuga quede inactiva 
-	
+
+
+	// variables bool que me permiten saber si un contador ya conto x tortuga
 	bool si_ovoposito;
 	bool si_arribo;
 	bool ha_sido_contada_V;
@@ -79,7 +83,7 @@ Tortuga::Tortuga()
 	ha_sido_contada_C_excavando = false;
 	ha_sido_contada_C_anidando = false;
 	
-	//
+
 	inactivo = false;
 }
 
@@ -196,6 +200,7 @@ int Tortuga::obt_estado()
 
 void Tortuga::avanzar(bool pasar_estado,const vector<double>& proba_inactiva, double random)
 {
+	// solo si esta vagando cambia de pos
 	if(id_de_estado == 0)
 	{
 		posicion.second += velocidad;

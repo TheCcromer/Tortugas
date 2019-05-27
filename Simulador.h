@@ -55,15 +55,18 @@ public:
 	// NOTA: la tarea de simular representada por este método es la que debe paralelizarse usando hilos.
 	void simular(int total_tics, int threads_count);
 	
+	// metodo que calcula los rangos que duran las mareas 
 	vector<double> calcular_rangos_mareas();
 
+	// metodo que calcula cuantas tortugas entran por estado de marea   
     vector<int> calcular_rangos_tortugas();
 	
+	// controla cuantas tortugas arriban segun la altura de la marea
 	void control_arribada(int estado_marea, double altura_marea_actual, vector<int> rango_tortugas);
 
-	
 	void inicializarContadores();
 	
+	// formula que saca cuando se va a pasar de estado
 	bool calcular_paso_de_estado(const vector<int>& rangos_de_estado, int tic_actual, int id_estado);
 	
 	vector<int> rangos_de_estado();
@@ -212,8 +215,6 @@ void Simulador::simular(int total_tics, int threads_count)
 	int total_tortugas_contadas_V = 0;
 	
 	int total_tortugas_contadas_P = 0;
-	
-	int total_tortugas_contadas_C = 0;
 	
 	inicializarContadores();
 	
@@ -376,7 +377,7 @@ int Simulador::calcular_formula_TVB(int x)
 {
 	int A = 0;
 	for(int i = 0; i < 15; ++i)
-		A += matriz_terrenos[i][3];
+		A += matriz_terrenos[i][3] * 2;
 	int d = marea[2];
 	int w = 2;
 	double m = (int)marea[2] / matriz_transectos_verticales[0][1];

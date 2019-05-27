@@ -35,9 +35,9 @@ int main(int argc, const char * argv[]) {
 	Simulador simulador;
 	vector<string> vector_archivos(7);
 	rellenar_vector_archivos(vector_archivos);
-	vector<int> tamanyo_F(11);
-	vector<double> tamanyo_F2(11);
-	vector<vector<int>> tamanyo_C(31,tamanyo_F);
+	vector<int> tamanyo_F(11); // vector meramente hecho para asignarle valor a las columnas de las matrices
+	vector<double> tamanyo_F2(11); //vector para asignarle tamanyo a las matrices doubles del programa
+	vector<vector<int>> tamanyo_C(31,tamanyo_F); //matriz meramente para dar tamanyo
 	vector<vector<vector<int>>> master_matriz(5,tamanyo_C);
 	vector<vector<double>> matriz_mareas(3,tamanyo_F2);
 	vector<vector<double>> vector_compor_tortugas(1,tamanyo_F2);
@@ -56,13 +56,14 @@ int main(int argc, const char * argv[]) {
 
 void rellenar_vector_archivos(vector<string>& vector_archivos)
 {		
-	vector_archivos[0] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/experimentos.csv";
-	vector_archivos[1] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/terreno.csv";
-	vector_archivos[2] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/cuadrantes.csv";
-	vector_archivos[3] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/transectos_verticales.csv";
-	vector_archivos[4] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/transecto_paralelo_berma.csv";
-	vector_archivos[5] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/marea.csv";
-	vector_archivos[6] = "/home/thecromer/Repositorios Git/Tortugas Proyect/archivos/comportamiento_tortugas.csv"; 
+	// guardo la ruta de los archivos en los vectores 
+	vector_archivos[0] = "experimentos.csv";
+	vector_archivos[1] = "terreno.csv";
+	vector_archivos[2] = "cuadrantes.csv";
+	vector_archivos[3] = "transectos_verticales.csv";
+	vector_archivos[4] = "transecto_paralelo_berma.csv";
+	vector_archivos[5] = "marea.csv";
+	vector_archivos[6] = "comportamiento_tortugas.csv"; 
 }
 
 vector<vector<int>> leer_archivos_enteros(vector<string> vector_archivos, int id)
@@ -132,7 +133,7 @@ void inicializar_simulador(vector<vector<vector<int>>>& master_matriz, vector<ve
 			simuladores[i].inicializarMarea(matriz_mareas[0]);
 			for(int j = 0; j < 4; ++j)// el for de los 4 variantes diferentes de threads
 			{
-				for(int k = 0; k < master_matriz[0][i][0]; ++k)
+				for(int k = 0; k < master_matriz[0][i][0]; ++k) // el total de veces que se tiene que simular dicho en el archivo de experimentos
 				{
 					simuladores[i].inicializarTortugas(master_matriz[0][i][2], vector_compor_tortugas);
 					simuladores[i].simular(matriz_mareas[0][2],master_matriz[0][i][3 + j]);

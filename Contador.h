@@ -27,8 +27,10 @@ public:
 	// EFE: avanza *this según su velocidad y evoluciona su estado en el tic que le toque.
 	void avanzar();
 	
+	// metodo que recibe el tic actual y dependiendo de ese tic determina si se pone a contar o a esperar 
 	bool esta_en_espera(int tic);
 	
+	// metodo que le asigna al contador cada cuantos tics se pondra a contar 
 	void asignar_reset_conteo(int x);
 
 private:
@@ -59,7 +61,7 @@ double Contador::obtVelocidad()
 
 Contador::T_posicion Contador::obtPosicion()
 {
-	return posicion; // agregue su propio codigo
+	return posicion; 
 }
 
 
@@ -74,7 +76,6 @@ void Contador::asgPosicion(int x, int y)
 	posicion.second = y;
 }
 
-
 bool Contador::esta_en_espera(int tic)
 {
 	return tic % reset_conteo != 0;
@@ -87,5 +88,5 @@ void Contador::asignar_reset_conteo(int x)
 
 void Contador::avanzar()
 {
-	posicion.first += velocidad * (50/3);
+	posicion.first += velocidad;
 }
