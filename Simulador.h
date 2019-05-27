@@ -219,6 +219,7 @@ void Simulador::simular(int total_tics, int threads_count)
 	
 	int id_estado = 0;
 	
+#pragma parallel for num_threads(threads_count) reduction(+ : total_tortugas_contadas_V,total_tortugas_contadas_P)	
 	for(int i = 0; i < total_tics; ++i)
 	{
 		altura_marea_actual = p * i + marea[0];
@@ -236,7 +237,7 @@ void Simulador::simular(int total_tics, int threads_count)
 		
 		contador_paralelo.avanzar();
 		
-#pragma parallel for num_threads(threads_count) reduction(+ : total_tortugas_contadas_V,total_tortugas_contadas_P)
+//#pragma parallel for num_threads(threads_count) reduction(+ : total_tortugas_contadas_V,total_tortugas_contadas_P)
 		for(int j = 0; j < cantidad_tortugas_total; ++j)
 		{	
 			if(tortugas[j].logro_arribar())

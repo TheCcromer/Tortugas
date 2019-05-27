@@ -76,9 +76,6 @@ vector<vector<int>> leer_archivos_enteros(vector<string> vector_archivos, int id
     } catch (exception e){
         cout << "valor invalido o fuera de limite" << endl;
     }
-    /*for(auto f : ve)
-        for(auto x : f)
-            cout << x << ',' <<endl;*/      
 	return ve;
 }
 
@@ -126,7 +123,6 @@ vector< vector< T > > carga_valida_datos(ifstream& archivo, F t) throw (invalid_
 void inicializar_simulador(vector<vector<vector<int>>>& master_matriz, vector<vector<double>>& matriz_mareas, vector<double>& vector_compor_tortugas)
 {
 	vector<Simulador> simuladores(3);
-	#pragma omp parallel for num_threads(3)
 		for(int i = 0; i < 3; ++i)
 		{
 			simuladores[i].inicializarPlaya(master_matriz[1]); //inicializa los sectores
@@ -134,11 +130,9 @@ void inicializar_simulador(vector<vector<vector<int>>>& master_matriz, vector<ve
 			simuladores[i].inicializarTransectoBerma(master_matriz[4]);
 			simuladores[i].inicializarCuadrantes(master_matriz[2]);
 			simuladores[i].inicializarMarea(matriz_mareas[0]);
-			// poner un futuro for aqui que e haga el numero respectivo de veces que diga 
-			// experimentos un total de 
-			for(int j = 0; j < 4; ++j)
+			for(int j = 0; j < 4; ++j)// el for de los 4 variantes diferentes de threads
 			{
-				for(int k = 0; k < 10; ++k)
+				for(int k = 0; k < master_matriz[0][i][0]; ++k)
 				{
 					simuladores[i].inicializarTortugas(master_matriz[0][i][2], vector_compor_tortugas);
 					simuladores[i].simular(matriz_mareas[0][2],master_matriz[0][i][3 + j]);
